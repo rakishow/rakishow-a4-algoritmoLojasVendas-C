@@ -3,11 +3,12 @@
 #include <conio.h>
 #include <unistd.h>
 #include <string.h>
+#include <locale.h>
 
 /*
-[1] Função para item mais vendido do dia
+[1] FunÃ§Ã£o para item mais vendido do dia
 
-[2] Função para item menos vendido do dia
+[2] FunÃ§Ã£o para item menos vendido do dia
 */
 
 
@@ -26,10 +27,135 @@ typedef struct cadastroItem {
 }cadItem, *pCadItem, **ppCadItem;
 
 
-void item_maisVendido (int tamanho, ppCadItem vendas, int dia, int mes, int ano){
+void item_maisVendido(int tamanho, ppCadItem vendas, int dia, int mes, int ano)
+{
+    if (tamanho == 0) {
+        printf("Nenhuma venda cadastrada ainda.\n");
+        return;
+    }
+
+    int maxQtd = -1;
+    int idxMax = -1;
+
+
+    int codigosVerificados[100];
+    int codigosCount = 0;
+
+	int i;
+    for (i = 0; i < tamanho; i++) {
+        if (vendas[i]->dias == dia &&
+            vendas[i]->mes == mes &&
+            vendas[i]->ano == ano) {
+
+            int jaVerificado = 0;
+            int k;
+            for (k = 0; k < codigosCount; k++) {
+                if (codigosVerificados[k] == vendas[i]->codigo) {
+                    jaVerificado = 1;
+                    break;
+                }
+            }
+
+            if (jaVerificado) continue;
+
+            codigosVerificados[codigosCount++] = vendas[i]->codigo;
+
+            int soma = 0;
+            int j;
+            for (j = 0; j < tamanho; j++) {
+                if (vendas[j]->dias == dia &&
+                    vendas[j]->mes == mes &&
+                    vendas[j]->ano == ano &&
+                    vendas[j]->codigo == vendas[i]->codigo) {
+
+                    soma += vendas[j]->quantidade;
+                }
+            }
+
+            if (soma > maxQtd) {
+                maxQtd = soma;
+                idxMax = i;
+            }
+        }
+    }
+
+    if (idxMax == -1) {
+        printf("Nenhuma venda nesse dia.\n");
+        return;
+    }
+
+    printf("\n========== ITEM MAIS VENDIDO ==========\n");
+    printf("Data................: %02d/%02d/%04d\n", dia, mes, ano);
+    printf("Codigo..............: %d\n",   vendas[idxMax]->codigo);
+    printf("Marca...............: %s\n",   vendas[idxMax]->marca);
+    printf("Nome................: %s\n",   vendas[idxMax]->nomeItem);
+    printf("Quantidade vendida..: %d\n",   maxQtd);
+    printf("=======================================\n");
 }
 
-void item_menosVendido (int tamanho, ppCadItem vendas, int dia, int mes, int ano){
+void item_menosVendido(int tamanho, ppCadItem vendas, int dia, int mes, int ano)
+{
+    if (tamanho == 0) {
+        printf("Nenhuma venda cadastrada ainda.\n");
+        return;
+    }
+
+    int minQtd = __INT_MAX__;
+    int idxMin = -1;
+
+    int codigosVerificados[100];
+    int codigosCount = 0;
+	
+	int i;
+    for (i = 0; i < tamanho; i++) {
+        if (vendas[i]->dias == dia &&
+            vendas[i]->mes == mes &&
+            vendas[i]->ano == ano) {
+
+            int jaVerificado = 0;
+            int k;
+            for (k = 0; k < codigosCount; k++) {
+                if (codigosVerificados[k] == vendas[i]->codigo) {
+                    jaVerificado = 1;
+                    break;
+                }
+            }
+
+            if (jaVerificado) continue;
+
+            codigosVerificados[codigosCount++] = vendas[i]->codigo;
+
+            int soma = 0;
+            int j;
+            for (j = 0; j < tamanho; j++) {
+                if (vendas[j]->dias == dia &&
+                    vendas[j]->mes == mes &&
+                    vendas[j]->ano == ano &&
+                    vendas[j]->codigo == vendas[i]->codigo) {
+
+                    soma += vendas[j]->quantidade;
+                }
+            }
+
+            if (soma < minQtd) {
+                minQtd = soma;
+                idxMin = i;
+            }
+        }
+    }
+
+    if (idxMin == -1) {
+        printf("Nenhuma venda nesse dia.\n");
+        return;
+    }
+
+    printf("\n========= ITEM MENOS VENDIDO ==========\n");
+    printf("Data................: %02d/%02d/%04d\n", dia, mes, ano);
+    printf("Codigo..............: %d\n",   vendas[idxMin]->codigo);
+    printf("Marca...............: %s\n",   vendas[idxMin]->marca);
+    printf("Nome................: %s\n",   vendas[idxMin]->nomeItem);
+    printf("Quantidade vendida..: %d\n",   minQtd);
+    printf("=======================================\n");
 }
 
 
@@ -71,7 +197,7 @@ void cadastrar_string(int tamanho, ppCadItem vendas){
 	
 	vendas[tamanho]->marca = malloc(sizeof(buffer) + 1);
 	 if (vendas[tamanho]->marca == NULL) {
-        printf("Erro de alocação de memoria para marca!\n");
+        printf("Erro de alocaÃ§Ã£o de memoria para marca!\n");
         exit(1);
     }
 	strcpy(vendas[tamanho]->marca, buffer);
@@ -83,7 +209,7 @@ void cadastrar_string(int tamanho, ppCadItem vendas){
 	
 	vendas[tamanho]->nomeItem = malloc(sizeof(buffer) + 1);
 	if (vendas[tamanho]->nomeItem == NULL) {
-        printf("Erro de alocação de memoria para nome do item!\n");
+        printf("Erro de alocaÃ§Ã£o de memoria para nome do item!\n");
         exit(1);
     }
 	strcpy(vendas[tamanho]->nomeItem, buffer);
@@ -220,7 +346,7 @@ void relatorio_final(int tamanho, ppCadItem vendas, int dia, int mes, int ano){
 }
 
 int main (){
-	
+	setlocale (LC_ALL, "portuguese");
 	ppCadItem vet = NULL;
 	int opcao;
 	int tamanho = 0;
@@ -294,16 +420,20 @@ int main (){
             break;
 
         case '5':
-            printf("Funcionalidade ainda nao implementada.\n");
-            printf("\nPressione qualquer tecla para voltar ao menu...");
-            getch();
-            break;
+		printf("Informe a data (DD MM AAAA): ");
+		scanf("%d %d %d", &dia, &mes, &ano);
+		item_maisVendido(tamanho, vet, dia, mes, ano);
+		printf("\nPressione qualquer tecla para voltar ao menu...");
+		getch();
+		break;
 
         case '6':
-            printf("Funcionalidade ainda nao implementada.\n");
-            printf("\nPressione qualquer tecla para voltar ao menu...");
-            getch();
-            break;
+		printf("Informe a data (DD MM AAAA): ");
+		scanf("%d %d %d", &dia, &mes, &ano);
+		item_menosVendido(tamanho, vet, dia, mes, ano);
+		printf("\nPressione qualquer tecla para voltar ao menu...");
+		getch();
+		break;
 
         case '7':
             printf("Saindo do sistema...\n");
